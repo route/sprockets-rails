@@ -30,7 +30,7 @@ namespace :assets do
   end
 
   namespace :precompile do
-    def internal_precompile(digest=nil)
+    def internal_precompile(digest = nil)
       unless ::Rails.application.config.assets.enabled
         warn "Cannot precompile assets if sprockets is disabled. Please set config.assets.enabled to true"
         exit
@@ -47,13 +47,11 @@ namespace :assets do
 
       env      = ::Rails.application.assets
       target   = File.join(::Rails.public_path, config.assets.prefix)
-      compiler = Sprockets::Rails::StaticCompiler.new(env,
-                                                      target,
-                                                      config.assets.precompile,
-                                                      :manifest_path => config.assets.manifest,
-                                                      :digest => config.assets.digest,
-                                                      :manifest => digest.nil?)
-      compiler.compile
+
+      manifest = Sprockets::Rails::Manifest.new(env, target)
+      manifest.path = config.assets.manifest if config.assets.manifest
+
+      manifest.compile(config.assets.precompile)
     end
 
     task :all do

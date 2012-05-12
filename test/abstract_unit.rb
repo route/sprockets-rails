@@ -74,10 +74,26 @@ module TestHelpers
       end
 
       add_to_config 'config.secret_token = "3b7cd727ee24e8444053437c36cc66c4"; config.session_store :cookie_store, :key => "_myapp_session"; config.active_support.deprecation = :log'
+      add_to_env_config 'production', 'config.consider_all_requests_local = true; config.log_level = :debug'
     end
 
     def teardown_app
       ENV['RAILS_ENV'] = @prev_rails_env if @prev_rails_env
+    end
+
+    def precompile!(options = {})
+      options[:quietly] ||= true
+      cmd = "bundle exec rake assets:precompile"
+      cmd << " RAILS_ENV=#{options[:rails_env]}" if options[:rails_env]
+      cmd << " RAILS_GROUPS=#{options[:rails_groups]}" if options[:rails_groups]
+
+      if options[:quietly]
+        quietly do
+          Dir.chdir(app_path) { %x(#{cmd} --trace) }
+        end
+      else
+        Dir.chdir(app_path) { %x(#{cmd}) }
+      end
     end
 
     def add_to_config(str)

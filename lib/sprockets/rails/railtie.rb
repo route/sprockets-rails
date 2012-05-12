@@ -1,4 +1,5 @@
 require "action_controller/railtie"
+require "multi_json"
 
 module Sprockets
   module Rails
@@ -7,7 +8,7 @@ module Sprockets
     autoload :Compressors,    "sprockets/rails/compressors"
     autoload :LazyCompressor, "sprockets/rails/compressors"
     autoload :NullCompressor, "sprockets/rails/compressors"
-    autoload :StaticCompiler, "sprockets/rails/static_compiler"
+    autoload :Manifest,       "sprockets/rails/manifest"
 
     # TODO: Get rid of config.assets.enabled
     class Railtie < ::Rails::Railtie
@@ -34,13 +35,14 @@ module Sprockets
         end
 
         if config.assets.manifest
-          path = File.join(config.assets.manifest, "manifest.yml")
+          path = File.join(config.assets.manifest, "manifest.json")
         else
-          path = File.join(::Rails.public_path, config.assets.prefix, "manifest.yml")
+          path = File.join(::Rails.public_path, config.assets.prefix, "manifest.json")
         end
 
         if File.exist?(path)
-          config.assets.digests = YAML.load_file(path)
+          manifest = File.read(path)
+          config.assets.digests = MultiJson.load(manifest)['assets']
         end
 
         ActiveSupport.on_load(:action_view) do
