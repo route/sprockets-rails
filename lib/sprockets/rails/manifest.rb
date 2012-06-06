@@ -3,15 +3,6 @@ require "fileutils"
 module Sprockets
   module Rails
     class Manifest < ::Sprockets::Manifest
-      def path=(path)
-        @path = if File.extname(path) == ""
-          File.join(path, 'manifest.json')
-        else
-          File.expand_path(path)
-        end
-        FileUtils.mkdir_p(File.dirname(@path))
-      end
-
       def compile(*args)
         paths = environment.each_logical_path(*args).to_a +
           args.flatten.select { |fn| Pathname.new(fn).absolute? if fn.is_a?(String) }
@@ -28,7 +19,12 @@ module Sprockets
 
             target = target_for(asset)
 
-            asset.write_to(target) unless File.exist?(target)
+            if File.exist?(target)
+              logger.debug "Skipping #{target}, already exists"
+            else
+              logger.info "Writing #{target}"
+              asset.write_to target
+            end
 
             save
             asset

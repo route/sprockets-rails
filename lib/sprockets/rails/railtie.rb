@@ -34,14 +34,9 @@ module Sprockets
           end
         end
 
-        if config.assets.manifest
-          path = File.join(config.assets.manifest, "manifest.json")
-        else
-          path = File.join(::Rails.public_path, config.assets.prefix, "manifest.json")
-        end
-
-        if File.exist?(path)
-          manifest = File.read(path)
+        manifest_path = File.join(::Rails.public_path, config.assets.prefix, "manifest.json")
+        if File.exist?(manifest_path)
+          manifest = File.read(manifest_path)
           config.assets.digests = MultiJson.load(manifest)['assets']
         end
 

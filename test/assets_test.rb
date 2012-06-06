@@ -136,21 +136,6 @@ module ApplicationTests
       assert_match(/application-([0-z]+)\.css/, assets["application.css"])
     end
 
-    test "precompile creates a manifest file in a custom path with all the assets listed" do
-      app_file "app/assets/stylesheets/application.css.erb", "<%= asset_path('rails.png') %>"
-      app_file "app/assets/javascripts/application.js", "alert();"
-      # digest is default in false, we must enable it for test environment
-      add_to_config "config.assets.digest = true"
-      add_to_config "config.assets.manifest = '#{app_path}/shared'"
-
-      precompile!
-      manifest = File.read("#{app_path}/shared/manifest.json")
-
-      assets = MultiJson.load(manifest)['assets']
-      assert_match(/application-([0-z]+)\.js/, assets["application.js"])
-      assert_match(/application-([0-z]+)\.css/, assets["application.css"])
-    end
-
     test "the manifest file should be saved by default in the same assets folder" do
       app_file "app/assets/javascripts/application.js", "alert();"
       # digest is default in false, we must enable it for test environment
@@ -264,7 +249,11 @@ module ApplicationTests
       assert_match(/\/assets\/rails-([0-z]+)\.png/, File.read(file))
     end
 
-    # FIXME: Expected "application-7f31750ee7db45b9826ce925c0245575.css" to not be equal to "application-7f31750ee7db45b9826ce925c0245575.css".
+    # FIXME: When we compiled second time for non-digest assets asset_path had been changed
+    # and it writed manifest with two versions of application-<digest>.css in files section
+    # but assets section point to wrong digested file that doesn't exist. Well it's too hard to 
+    # update sprockets-rails to last version of sprockets without getting rid of nondigested assets.
+    # 
     # test "precompile shouldn't use the digests present in manifest.json" do
     #   app_file "app/assets/stylesheets/application.css.erb", "<%= asset_path('rails.png') %>"
     # 

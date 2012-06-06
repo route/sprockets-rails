@@ -49,7 +49,6 @@ namespace :assets do
       target   = File.join(::Rails.public_path, config.assets.prefix)
 
       manifest = Sprockets::Rails::Manifest.new(env, target)
-      manifest.path = config.assets.manifest if config.assets.manifest
 
       manifest.compile(config.assets.precompile)
     end
